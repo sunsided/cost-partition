@@ -1,0 +1,9 @@
+[package]
+name = "cost-partition"
+description = "Cost partitioning (saturated, max-over-orders) over arbitrary planning abstractions"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+rust-version = "1.85"
+repository = "https://github.com/sunsided/cost-partition"
+readme = "README.md"
