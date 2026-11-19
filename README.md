@@ -43,6 +43,29 @@ assert!(max.value(&task.initial_state()) >= h);
 
 `None` from `value` means a dead end: no plan exists from that state.
 
+## Examples
+
+Both run on the translated `gripper-4` task by default, or on any translator output passed as an argument.
+
+[`heuristics`](https://github.com/sunsided/cost-partition/blob/main/examples/heuristics.rs) shows why costs are partitioned. Adding the projections' estimates with full costs overestimates the optimum, so the sum is not admissible. SCP splits the costs first: it stays admissible and is stronger than the best single projection.
+
+```text
+$ cargo run --example heuristics
+optimal plan cost (h*)              9
+best single projection              2
+sum, full costs                    24  inadmissible
+SCP, one order                      4
+max of SCP over 8 orders            4
+```
+
+[`astar`](https://github.com/sunsided/cost-partition/blob/main/examples/astar.rs) solves the task optimally with A*, blind and guided by SCP, and prints the plan. Both plans are optimal; the guided search expands fewer states.
+
+```text
+$ cargo run --release --example astar
+blind (h = 0)                cost 9          230 expansions
+max of SCP over 8 orders     cost 9          178 expansions
+```
+
 ## Tested
 
 SCP ≤ h*, SCP ≥ its first component, no false dead ends, and cost functions sum to at most the original costs. These hold as proptest properties and a fuzz target on random tasks, and on translator output, both with and without conditional effects and axioms (derived variables).
