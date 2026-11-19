@@ -9,6 +9,11 @@
 //! given order, and maximizing over several orders. Planned: greedy and
 //! diversified orders, general (negative) costs, an optimal LP baseline.
 
+#![no_std]
+
+extern crate alloc;
+
+use alloc::{vec, vec::Vec};
 use sas_plus::{Abstraction, State};
 
 /// The result of partitioning costs among abstractions in a fixed order.

@@ -11,4 +11,7 @@ readme = "README.md"
 exclude = ["tests/fixtures"]
 
 [dependencies]
-sas-plus = { version = "0.1.0" }
+sas-plus = { version = "0.2.0", default-features = false }
+
+[dev-dependencies]
+sas-plus = { version = "0.2.0", features = ["fdr", "random"] }
