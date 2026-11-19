@@ -23,6 +23,13 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
+      - name: Require the tagged commit to be on main
+        run: |
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::$GITHUB_REF_NAME points at a commit that is not on main"
+            exit 1
+          fi
       - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable
         with:
           toolchain: stable
@@ -71,12 +78,16 @@ jobs:
         id: check
         # The first release of a crate is published by hand, and re-runs must be harmless.
         run: |
-          status="$(curl -s -o /dev/null -w '%{http_code}' -A "$GITHUB_REPOSITORY publish workflow" \
+          status="$(curl -s --retry 3 -o /dev/null -w '%{http_code}' -A "$GITHUB_REPOSITORY publish workflow" \
             "https://crates.io/api/v1/crates/$CRATE/$VERSION")"
-          if [ "$status" = 200 ]; then
-            echo "::notice::$CRATE $VERSION is already on crates.io; nothing to publish"
-            echo "published=true" >> "$GITHUB_OUTPUT"
-          fi
+          case "$status" in
+            200)
+              echo "::notice::$CRATE $VERSION is already on crates.io; nothing to publish"
+              echo "published=true" >> "$GITHUB_OUTPUT"
+              ;;
+            404) ;;
+            *) echo "::error::crates.io answered HTTP $status for $CRATE $VERSION"; exit 1 ;;
+          esac
         env:
           CRATE: ${{ steps.crate.outputs.name }}
           VERSION: ${{ steps.crate.outputs.version }}
