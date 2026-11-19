@@ -37,6 +37,7 @@ private_intra_doc_links = "allow"
 
 [dev-dependencies]
 criterion = "0.8.2"
+merge-and-shrink = "0.2.1"
 proptest = "1.11.0"
 sas-plus = { version = "0.2.0", features = ["fdr", "random"] }
 

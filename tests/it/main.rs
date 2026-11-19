@@ -2,7 +2,7 @@
 //!
 //! - [`translated`]: Fast Downward translator output with known optimal costs.
 //! - [`properties`]: property tests over random tasks, checked against the exact
-//!   heuristic `h*`.
+//!   heuristic `h*`, over projections and merge-and-shrink abstractions.
 
 mod properties;
 mod strategies;

@@ -4,6 +4,7 @@
 //! [`sas_plus::Task::perfect_heuristic`]. `None` means a dead end.
 
 use cost_partition::{MaxOverOrders, saturated_cost_partitioning};
+use merge_and_shrink::{Bisimulation, LinearMerge, MergeAndShrink};
 use proptest::prelude::*;
 use sas_plus::Abstraction;
 
@@ -88,5 +89,29 @@ proptest! {
                 prop_assert!(h >= hc, "max {h} below component {hc}");
             }
         }
+    }
+
+    /// SCP stays admissible when projections and a merge-and-shrink abstraction
+    /// share one order, with the merge-and-shrink abstraction at any position.
+    ///
+    /// Merge-and-shrink prunes dead-end abstract states, so `abstract_state`
+    /// returns `None` for them: the dead-end path that projections never take.
+    #[test]
+    fn scp_with_merge_and_shrink_is_admissible(case in case()) {
+        let num_vars = case.task.num_variables();
+        let mas = MergeAndShrink::new(LinearMerge::in_variable_order(num_vars), Bisimulation)
+            .build(&case.task);
+        let mut abstractions: Vec<&dyn Abstraction> =
+            case.projections.iter().map(|p| p as &dyn Abstraction).collect();
+        abstractions.push(&mas);
+        let mut order = case.order.clone();
+        order.insert(case.prefix, abstractions.len() - 1);
+        let costs = case.task.costs();
+        let init = case.task.initial_state();
+
+        let scp = saturated_cost_partitioning(&abstractions, &order, &costs);
+        check_admissible("SCP with merge-and-shrink", scp.value(&init), h_star(&case))?;
+        let max = MaxOverOrders::new(&abstractions, &[order], &costs);
+        check_admissible("max with merge-and-shrink", max.value(&init), h_star(&case))?;
     }
 }
