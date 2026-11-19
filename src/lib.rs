@@ -91,12 +91,13 @@ pub fn saturated_cost_partitioning<'a, A: Abstraction>(
     let mut remaining = costs.to_vec();
     let mut distances: Vec<Vec<Option<u64>>> = vec![Vec::new(); abstractions.len()];
     let mut cost_functions = vec![vec![0; costs.len()]; abstractions.len()];
+    let mut seen = vec![false; abstractions.len()];
 
     for &i in order {
         // A second pass would overwrite the first one's distances while its costs stay spent.
         assert!(
-            distances[i].is_empty(),
-            "abstraction {i} appears twice in order"
+            !core::mem::replace(&mut seen[i], true),
+            "saturated_cost_partitioning: abstraction {i} appears twice in order"
         );
         let lts = abstractions[i].lts();
         let h = lts.goal_distances(&remaining);
@@ -173,7 +174,10 @@ impl<'a, A: Abstraction> MaxOverOrders<'a, A> {
     #[must_use]
     pub fn new(abstractions: &'a [A], orders: &[Vec<usize>], costs: &[u64]) -> Self {
         // With no orders, `value` would be 0 everywhere and miss dead ends.
-        assert!(!orders.is_empty(), "at least one order");
+        assert!(
+            !orders.is_empty(),
+            "MaxOverOrders::new needs at least one order"
+        );
         Self {
             abstractions,
             heuristics: orders

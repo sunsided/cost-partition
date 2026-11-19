@@ -25,7 +25,7 @@ fn gripper_costs() -> (sas_plus::Task, Vec<Projection>) {
 
 /// A repeated index would spend its costs twice and drop its estimate.
 #[test]
-#[should_panic(expected = "appears twice in order")]
+#[should_panic(expected = "saturated_cost_partitioning: abstraction 0 appears twice in order")]
 fn scp_rejects_a_repeated_index() {
     let (task, projections) = gripper_costs();
     let _ = saturated_cost_partitioning(&projections, &[0, 0], &task.costs());
@@ -33,7 +33,7 @@ fn scp_rejects_a_repeated_index() {
 
 /// With no orders, the maximum would be 0 everywhere and miss dead ends.
 #[test]
-#[should_panic(expected = "at least one order")]
+#[should_panic(expected = "MaxOverOrders::new needs at least one order")]
 fn max_over_orders_rejects_no_orders() {
     let (task, projections) = gripper_costs();
     let _ = MaxOverOrders::new(&projections, &[], &task.costs());
