@@ -5,6 +5,9 @@
 //! cost of the same operators. Saturated cost partitioning (SCP) splits each
 //! operator's cost among the projections first, so the sum stays admissible.
 //!
+//! Meant for small tasks: `h*` comes from an exhaustive search of the state
+//! space, and there is a projection for every pair of variables.
+//!
 //! ```sh
 //! cargo run --example heuristics                    # translated gripper-4
 //! cargo run --example heuristics -- path/to/output.sas
@@ -17,6 +20,8 @@ use sas_plus::fdr::SasFile;
 use sas_plus::{Abstraction, Projection, State, Task};
 
 /// Translator output used when no path is given.
+///
+/// Lives in the repository only; the published package leaves it out.
 const DEFAULT_TASK: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/tests/fixtures/translated/gripper-4/output.sas"
@@ -30,24 +35,26 @@ fn main() -> Result<(), Box<dyn Error>> {
     let path = std::env::args()
         .nth(1)
         .unwrap_or_else(|| DEFAULT_TASK.into());
-    let task = SasFile::parse(&std::fs::read_to_string(&path)?)?.to_task();
+    let task = SasFile::parse(&read(&path)?)?.to_task();
     let costs = task.costs();
     let init = task.initial_state();
     let projections = atomic_and_pair_projections(&task);
 
-    let single = projections
+    let estimates: Vec<Option<u64>> = projections
         .iter()
         .map(|p| full_cost_estimate(p, &init, &costs))
-        .max()
-        .flatten();
-    let naive_sum: Option<u64> = projections
+        .collect();
+    // One projection proving a dead end makes the maximum and the sum dead ends, too.
+    let single = estimates
         .iter()
-        .map(|p| full_cost_estimate(p, &init, &costs))
-        .sum();
+        .copied()
+        .collect::<Option<Vec<u64>>>()
+        .map(|h| h.into_iter().max().unwrap_or(0));
+    let naive_sum: Option<u64> = estimates.iter().copied().sum();
     let order: Vec<usize> = (0..projections.len()).collect();
     let scp = saturated_cost_partitioning(&projections, &order, &costs).value(&init);
-    let max = MaxOverOrders::new(&projections, &rotations(projections.len(), ORDERS), &costs)
-        .value(&init);
+    let orders = rotations(projections.len(), ORDERS);
+    let max = MaxOverOrders::new(&projections, &orders, &costs).value(&init);
 
     let h_star = task.perfect_heuristic()(&init);
 
@@ -56,9 +63,20 @@ fn main() -> Result<(), Box<dyn Error>> {
     report("best single projection", single, h_star);
     report("sum, full costs", naive_sum, h_star);
     report("SCP, one order", scp, h_star);
-    report(&format!("max of SCP over {ORDERS} orders"), max, h_star);
+    report(
+        &format!("max of SCP over {} orders", orders.len()),
+        max,
+        h_star,
+    );
 
     Ok(())
+}
+
+/// Reads the translator output at `path`, naming the file when that fails.
+fn read(path: &str) -> Result<String, String> {
+    std::fs::read_to_string(path).map_err(|e| {
+        format!("cannot read {path}: {e}; pass a translator output.sas as the argument")
+    })
 }
 
 /// Projections onto every variable and every pair of variables of `task`.
@@ -82,7 +100,9 @@ fn full_cost_estimate(abstraction: &Projection, state: &State, costs: &[u64]) ->
     abstraction.lts().goal_distances(costs)[abstract_state]
 }
 
-/// `count` distinct orders over `len` abstractions: rotations of the identity.
+/// Up to `count` distinct orders over `len` abstractions: rotations of the identity.
+///
+/// There are only `len` rotations, so fewer orders come back when `len < count`.
 fn rotations(len: usize, count: usize) -> Vec<Vec<usize>> {
     (0..count.min(len))
         .map(|shift| (0..len).map(|i| (i + shift) % len).collect())

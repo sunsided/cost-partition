@@ -45,12 +45,11 @@ assert!(max.value(&task.initial_state()) >= h);
 
 ## Examples
 
-Both run on the translated `gripper-4` task by default, or on any translator output passed as an argument. `task examples` runs both (`task examples -- path/to/output.sas` for another task).
+Both are meant for small tasks. They run on the translated `gripper-4` task from this repository by default, or on the translator output passed as an argument. `task examples` runs both (`task examples -- path/to/output.sas` for another task).
 
-[`heuristics`](https://github.com/sunsided/cost-partition/blob/main/examples/heuristics.rs) shows why costs are partitioned. Adding the projections' estimates with full costs overestimates the optimum, so the sum is not admissible. SCP splits the costs first: it stays admissible and is stronger than the best single projection.
+[`heuristics`](https://github.com/sunsided/cost-partition/blob/main/examples/heuristics.rs) shows why costs are partitioned. Adding the projections' estimates with full costs overestimates the optimum, so the sum is not admissible. SCP splits the costs first: it stays admissible and is stronger than the best single projection. Its estimates for gripper-4:
 
 ```text
-$ cargo run --example heuristics
 optimal plan cost (h*)              9
 best single projection              2
 sum, full costs                    24  inadmissible
@@ -58,10 +57,9 @@ SCP, one order                      4
 max of SCP over 8 orders            4
 ```
 
-[`astar`](https://github.com/sunsided/cost-partition/blob/main/examples/astar.rs) solves the task optimally with A*, blind and guided by SCP, and prints the plan. Both plans are optimal; the guided search expands fewer states.
+[`astar`](https://github.com/sunsided/cost-partition/blob/main/examples/astar.rs) solves the task optimally with A*, blind and guided by SCP, and prints the plan. Both plans are optimal; the guided search expands fewer states. Its summary for gripper-4, before the plan:
 
 ```text
-$ cargo run --release --example astar
 blind (h = 0)                cost 9          230 expansions
 max of SCP over 8 orders     cost 9          178 expansions
 ```

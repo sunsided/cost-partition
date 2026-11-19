@@ -5,6 +5,9 @@
 //! projections. Both find a plan of the same, optimal cost; the heuristic
 //! search expands far fewer states.
 //!
+//! Meant for small tasks: both searches keep every reached state in memory, and
+//! there is a projection for every pair of variables.
+//!
 //! ```sh
 //! cargo run --release --example astar                    # translated gripper-4
 //! cargo run --release --example astar -- path/to/output.sas
@@ -20,6 +23,8 @@ use sas_plus::fdr::SasFile;
 use sas_plus::{OpId, Projection, State, Task};
 
 /// Translator output used when no path is given.
+///
+/// Lives in the repository only; the published package leaves it out.
 const DEFAULT_TASK: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/tests/fixtures/translated/gripper-4/output.sas"
@@ -51,7 +56,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let path = std::env::args()
         .nth(1)
         .unwrap_or_else(|| DEFAULT_TASK.into());
-    let sas = SasFile::parse(&std::fs::read_to_string(&path)?)?;
+    let sas = SasFile::parse(&read(&path)?)?;
     let task = sas.to_task();
     let costs = task.costs();
 
@@ -63,7 +68,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let blind = astar(&task, |_| Some(0));
     report("blind (h = 0)", &blind);
     let guided = astar(&task, |state| scp.value(state));
-    report(&format!("max of SCP over {ORDERS} orders"), &guided);
+    report(&format!("max of SCP over {} orders", orders.len()), &guided);
+    assert_eq!(blind.cost, guided.cost, "both searches are optimal");
 
     if let Some(plan) = &guided.plan {
         print!("\n{}", sas.format_plan(plan));
@@ -165,6 +171,13 @@ fn extract_plan(nodes: &HashMap<State, Node>, goal: State) -> Vec<OpId> {
     plan
 }
 
+/// Reads the translator output at `path`, naming the file when that fails.
+fn read(path: &str) -> Result<String, String> {
+    std::fs::read_to_string(path).map_err(|e| {
+        format!("cannot read {path}: {e}; pass a translator output.sas as the argument")
+    })
+}
+
 /// Projections onto every variable and every pair of variables of `task`.
 fn atomic_and_pair_projections(task: &Task) -> Vec<Projection> {
     let n = task.num_variables();
@@ -177,7 +190,9 @@ fn atomic_and_pair_projections(task: &Task) -> Vec<Projection> {
         .collect()
 }
 
-/// `count` distinct orders over `len` abstractions: rotations of the identity.
+/// Up to `count` distinct orders over `len` abstractions: rotations of the identity.
+///
+/// There are only `len` rotations, so fewer orders come back when `len < count`.
 fn rotations(len: usize, count: usize) -> Vec<Vec<usize>> {
     (0..count.min(len))
         .map(|shift| (0..len).map(|i| (i + shift) % len).collect())
