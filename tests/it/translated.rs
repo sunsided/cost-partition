@@ -1,7 +1,14 @@
+//! SCP over atomic projections of Fast Downward translator output.
+//!
+//! The fixtures and their optimal costs come from sas-plus, which checks the
+//! optima by exhaustive search (see `tests/fixtures/README.md`).
+
 use cost_partition::saturated_cost_partitioning;
 use sas_plus::Projection;
 use sas_plus::fdr::SasFile;
 
+/// SCP never exceeds the known optimal cost, with and without conditional
+/// effects and axioms.
 #[test]
 fn scp_is_admissible_on_translator_output() {
     for (fixture, optimum) in [

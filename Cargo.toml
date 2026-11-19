@@ -16,4 +16,6 @@ exclude = ["tests/fixtures"]
 sas-plus = { version = "0.2.0", default-features = false }
 
 [dev-dependencies]
+criterion = "0.7.0"
+proptest = "1.11.0"
 sas-plus = { version = "0.2.0", features = ["fdr", "random"] }
