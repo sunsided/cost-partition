@@ -9,8 +9,17 @@ repository = "https://github.com/sunsided/cost-partition"
 readme = "README.md"
 keywords = ["planning", "cost-partitioning", "heuristic", "abstraction", "fast-downward"]
 categories = ["algorithms", "science", "no-std"]
-# GPL-2.0-or-later test inputs and their license text; see tests/fixtures/README.md
-exclude = ["tests/fixtures/translated", "LICENSES/GPL-2.0-or-later.txt"]
+# Only what the library and the README doctest need. The tests, benches and
+# examples read the GPL-2.0-or-later fixtures in tests/fixtures/translated,
+# which stay out of the package (see tests/fixtures/README.md).
+include = [
+    "/src",
+    "/README.md",
+    "/CHANGELOG.md",
+    "/LICENSES/Apache-2.0.txt",
+    "/LICENSES/MIT.txt",
+    "/tests/fixtures/gripper-costs",
+]
 
 [dependencies]
 sas-plus = { version = "0.2.0", default-features = false }

@@ -2,7 +2,7 @@
 
 use proptest::prelude::*;
 use sas_plus::random::{RandomTaskParams, random_task};
-use sas_plus::{Projection, State, Task};
+use sas_plus::{Projection, Task};
 
 /// A random task, its projections, and an order over them to partition costs in.
 #[derive(Debug)]
@@ -15,13 +15,6 @@ pub struct Case {
     pub order: Vec<usize>,
     /// Length of an order prefix, in `0..=order.len()`, for partial orders.
     pub prefix: usize,
-}
-
-impl Case {
-    /// The initial state with derived variables evaluated.
-    pub fn initial_state(&self) -> State {
-        self.task.initial_state()
-    }
 }
 
 /// Generator parameters: plain SAS+, or with conditional effects and axioms.
