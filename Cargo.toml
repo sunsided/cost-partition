@@ -7,6 +7,8 @@ license = "MIT OR Apache-2.0"
 rust-version = "1.85"
 repository = "https://github.com/sunsided/cost-partition"
 readme = "README.md"
+keywords = ["planning", "cost-partitioning", "heuristic", "abstraction", "fast-downward"]
+categories = ["algorithms", "science", "no-std"]
 # GPL-2.0 test inputs; see tests/fixtures/README.md
 exclude = ["tests/fixtures"]
 
