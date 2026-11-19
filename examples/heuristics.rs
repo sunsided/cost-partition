@@ -45,11 +45,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .map(|p| full_cost_estimate(p, &init, &costs))
         .collect();
     // One projection proving a dead end makes the maximum and the sum dead ends, too.
-    let single = estimates
-        .iter()
-        .copied()
-        .collect::<Option<Vec<u64>>>()
-        .map(|h| h.into_iter().max().unwrap_or(0));
+    let single = estimates.iter().try_fold(0, |best, &h| Some(best.max(h?)));
     let naive_sum: Option<u64> = estimates.iter().copied().sum();
     let order: Vec<usize> = (0..projections.len()).collect();
     let scp = saturated_cost_partitioning(&projections, &order, &costs).value(&init);

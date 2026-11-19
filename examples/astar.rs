@@ -69,7 +69,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     report("blind (h = 0)", &blind);
     let guided = astar(&task, |state| scp.value(state));
     report(&format!("max of SCP over {} orders", orders.len()), &guided);
-    assert_eq!(blind.cost, guided.cost, "both searches are optimal");
+    assert_eq!(
+        blind.cost, guided.cost,
+        "blind and guided A* found different costs"
+    );
 
     if let Some(plan) = &guided.plan {
         print!("\n{}", sas.format_plan(plan));
