@@ -127,3 +127,8 @@ impl<'a, A: Abstraction> MaxOverOrders<'a, A> {
             .try_fold(0, |best, h| Some(best.max(h.value_of(&abstract_states)?)))
     }
 }
+
+/// Doctests for the code examples in README.md (not part of the API).
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+mod readme_doctests {}
