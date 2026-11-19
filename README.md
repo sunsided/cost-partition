@@ -12,6 +12,42 @@ Cost partitioning over *any* `sas_plus::Abstraction` (projections, merge-and-shr
 
 Splitting each operator's cost among several abstractions, so that the parts sum to at most the original cost, makes the *sum* of their heuristics admissible.
 
+## What cost partitioning is
+
+A planning heuristic estimates, for a state, the cost of the cheapest plan to a goal. Optimal search such as A* needs it to be *admissible*: it never estimates more than the true optimum `h*`.
+
+An *abstraction* gives such a heuristic cheaply. It maps every state to a smaller abstract state space, for example a projection that keeps only some variables, and uses the goal distance there as the estimate. Each abstraction is admissible on its own, but usually weak, because it sees only part of the task.
+
+Adding the estimates of several abstractions is not admissible in general. Each one charges the full cost of every operator it needs, so an operator that several abstractions need is paid for several times. On the translated gripper-4 task, the projections' estimates add up to 24, while the optimal plan costs 9.
+
+Cost partitioning removes the double counting. Each operator's cost is split into shares, one per abstraction, so that the shares sum to at most the original cost. Each abstraction then computes its goal distances under its own shares only. Any plan pays every operator at most once in total across the abstractions, so the sum of their estimates is admissible again.
+
+## How saturated cost partitioning works
+
+Saturated cost partitioning (SCP) builds the shares greedily, one abstraction at a time, in a given order:
+
+1. Compute the abstraction's goal distances under the costs that are still left.
+2. Take its *saturated* cost function: for each operator, the least cost that keeps all of those goal distances. That is the largest drop in goal distance along any transition the operator labels. Operators that do not bring this abstraction closer to the goal get 0.
+3. Subtract the saturated costs from what is left, and pass the rest on to the next abstraction.
+
+An abstraction early in the order keeps its full estimate and takes only the costs it needs, so later abstractions still get the costs it has no use for. Abstractions left out of the order get no costs, but still report dead ends: states from which no plan exists.
+
+A small example: operators `a` (cost 2) and `b` (cost 3), with the optimal plan `a, b`, so `h* = 5`. Abstraction `X` only notices `a`, and abstraction `Y` notices both.
+
+```text
+                  share of a   share of b   estimate
+X, full costs          2            3           2
+Y, full costs          2            3           5
+sum, full costs                                 7   > h* = 5, not admissible
+
+SCP in order X, Y
+X                      2            0           2   b does not change X's distances
+Y                      0            3           3   only the costs X left over
+sum                    2            3           5   = h* = 5
+```
+
+Different orders give different estimates, and none is best for every state. `MaxOverOrders` computes SCP for several orders and takes the largest estimate, which is still admissible.
+
 ## Usage
 
 Build projections of a task from Fast Downward's translator, partition the costs among them, and evaluate the heuristic:
