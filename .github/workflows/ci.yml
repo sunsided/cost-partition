@@ -20,7 +20,7 @@ env:
 jobs:
   branch:
     name: branch name
-    # Runs on PRs and merge queues (detached HEAD passes) so it can be a required check.
+    # Runs on PRs and merge queues (gh-readonly-queue/* passes) so it can be a required check.
     if: github.event_name != 'push'
     runs-on: ubuntu-latest
     permissions:

@@ -8,6 +8,7 @@
 #   gitflow: main, develop, feature/*, release/*, hotfix/*, support/* (Git Flow)
 # release/* and hotfix/* are release branches in both models (GitVersion: -beta builds) and
 # release/* also carries release-plz PRs. dependabot/* is allowed because it cannot be renamed.
+# gh-readonly-queue/* is the merge queue's temporary branch.
 # copilot/* (Copilot cloud agent) only warns: migrate it to feature/* before working on it.
 set -eu
 
@@ -15,7 +16,7 @@ branch="${1:-$(git rev-parse --abbrev-ref HEAD)}"
 flow="${2:-${BRANCH_FLOW:-github}}"
 
 case "$flow:$branch" in
-  *:main | *:feature/?* | *:release/?* | *:hotfix/?* | *:dependabot/?*) exit 0 ;;
+  *:main | *:feature/?* | *:release/?* | *:hotfix/?* | *:dependabot/?* | *:gh-readonly-queue/?*) exit 0 ;;
   gitflow:develop | gitflow:support/?*) exit 0 ;;
   *:copilot/?*)
     echo "warning: '$branch' is a Copilot branch; migrate it to feature/${branch#copilot/} before working on it"
