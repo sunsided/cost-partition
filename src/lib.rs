@@ -37,6 +37,7 @@ impl<A: Abstraction> CostPartitionedHeuristic<'_, A> {
     /// Like [`value`](Self::value), given the abstract state of `state` in
     /// each abstraction.
     fn value_of(&self, abstract_states: &[usize]) -> Option<u64> {
+        debug_assert_eq!(abstract_states.len(), self.distances.len());
         abstract_states
             .iter()
             .zip(&self.distances)
