@@ -176,6 +176,12 @@ tasks:
       # --bench '*': only [[bench]] targets (--benches would include lib harnesses that reject criterion flags).
       - cargo bench --workspace --bench '*' -- {{.CLI_ARGS}}
 
+  examples:
+    desc: "Run every example (arguments after --: task examples -- path/to/output.sas)"
+    cmds:
+      - for: [heuristics, astar]
+        cmd: cargo run --release --example {{.ITEM}} -- {{.CLI_ARGS}}
+
   ci:
     desc: Run the CI checks locally (mirrors .github/workflows/ci.yml)
     cmds:

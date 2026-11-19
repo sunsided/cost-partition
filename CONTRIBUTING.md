@@ -32,6 +32,7 @@ needs before it can be merged.
 | `task doc` | Build the docs, private items included, with warnings as errors |
 | `task ci` | Everything CI runs except `coverage` and `semver`. Run it before you open a PR |
 | `task bench` | Benchmarks |
+| `task examples` | Run the examples |
 | `task fuzz:smoke` | Run every fuzz target briefly (needs nightly) |
 | `task clean` | Remove build output (fuzz corpora and crash artifacts are kept) |
 
