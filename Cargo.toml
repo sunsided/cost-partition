@@ -4,7 +4,7 @@ description = "Cost partitioning (saturated, max-over-orders) over arbitrary pla
 version = "0.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
-rust-version = "1.85"
+rust-version = "1.86"
 repository = "https://github.com/sunsided/cost-partition"
 readme = "README.md"
 keywords = ["planning", "cost-partitioning", "heuristic", "abstraction", "fast-downward"]
@@ -36,7 +36,7 @@ broken_intra_doc_links = "deny"
 private_intra_doc_links = "allow"
 
 [dev-dependencies]
-criterion = "0.7.0"
+criterion = "0.8.2"
 proptest = "1.11.0"
 sas-plus = { version = "0.2.0", features = ["fdr", "random"] }
 
