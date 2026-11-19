@@ -10,6 +10,7 @@
 //! diversified orders, general (negative) costs, an optimal LP baseline.
 
 #![no_std]
+#![forbid(unsafe_code)]
 
 extern crate alloc;
 
