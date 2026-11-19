@@ -53,6 +53,17 @@ fn scp_over_projections_is_admissible_and_dominates_its_first_component() {
                 (None, h) => assert_eq!(h, None, "seed {seed}: SCP claims a false dead end"),
                 (Some(_), None) => {}
             }
+            // Abstractions left out of the order get zero costs but still detect dead ends.
+            let partial = saturated_cost_partitioning(&projections, &order[..1], &costs);
+            match (partial.value(&init), h_star) {
+                (Some(h), Some(opt)) => {
+                    assert!(h <= opt, "seed {seed}: partial SCP {h} > h* {opt}")
+                }
+                (None, h) => {
+                    assert_eq!(h, None, "seed {seed}: partial SCP claims a false dead end")
+                }
+                (Some(_), None) => {}
+            }
             orders.push(order);
         }
         let max = MaxOverOrders::new(&projections, &orders, &costs);
