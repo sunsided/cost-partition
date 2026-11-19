@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/crates/l/cost-partition)](https://github.com/sunsided/cost-partition#license)
 [![unsafe forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/)
 
-Cost partitioning over *any* `sas_plus::Abstraction` (projections, merge-and-shrink, ...): saturated cost partitioning for a given order, and the maximum over several orders.
+Cost partitioning over *any* `sas_plus::Abstraction` (projections, [merge-and-shrink](https://crates.io/crates/merge-and-shrink), ...): saturated cost partitioning for a given order, and the maximum over several orders. Different kinds of abstractions can share one order as `Vec<&dyn Abstraction>`.
 
 Splitting each operator's cost among several abstractions, so that the parts sum to at most the original cost, makes the *sum* of their heuristics admissible.
 
@@ -102,7 +102,7 @@ max of SCP over 8 orders     cost 9          178 expansions
 
 ## Tested
 
-SCP ≤ h*, SCP ≥ its first component, no false dead ends, and cost functions sum to at most the original costs. These hold as proptest properties and a fuzz target on random tasks, and on translator output, both with and without conditional effects and axioms (derived variables).
+SCP ≤ h*, SCP ≥ its first component, no false dead ends, and cost functions sum to at most the original costs. These hold as proptest properties and a fuzz target on random tasks (the properties also with a merge-and-shrink abstraction in the order), and on translator output, both with and without conditional effects and axioms (derived variables).
 
 ## Features
 
