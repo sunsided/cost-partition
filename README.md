@@ -53,7 +53,7 @@ SCP ≤ h*, SCP ≥ its first component, no false dead ends, and cost functions 
 
 ## MSRV
 
-Rust 1.85. Raising it is a minor-version change.
+Rust 1.86. Raising it is a minor-version change.
 
 ## Roadmap
 
