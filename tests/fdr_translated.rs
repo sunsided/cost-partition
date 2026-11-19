@@ -4,23 +4,32 @@ use sas_plus::fdr::SasFile;
 
 #[test]
 fn scp_is_admissible_on_translator_output() {
-    for (name, optimum) in [("sussman-anomaly", 3), ("gripper-2", 3), ("gripper-4", 9)] {
+    for (fixture, optimum) in [
+        ("gripper-costs", 7),
+        ("translated/sussman-anomaly", 3),
+        ("translated/gripper-2", 3),
+        ("translated/gripper-4", 9),
+        ("translated/courier", 16),
+        ("translated/wiring", 4),
+    ] {
         let path = format!(
-            "{}/tests/fixtures/translated/{name}/output.sas",
+            "{}/tests/fixtures/{fixture}/output.sas",
             env!("CARGO_MANIFEST_DIR")
         );
         let task = SasFile::parse(&std::fs::read_to_string(path).unwrap())
             .unwrap()
-            .to_task()
-            .unwrap();
+            .to_task();
         let n = task.num_variables();
         let projections: Vec<Projection> =
             (0..n).map(|v| Projection::new(&task, vec![v])).collect();
         let order: Vec<usize> = (0..n).collect();
         let h = saturated_cost_partitioning(&projections, &order, &task.costs())
-            .value(&task.initial)
+            .value(&task.initial_state())
             .unwrap();
-        assert!(h <= optimum, "{name}: SCP {h} > h* {optimum}");
-        println!("{name}: SCP over atomic projections = {h} (h* = {optimum})");
+        assert!(h <= optimum, "{fixture}: SCP {h} > h* {optimum}");
+        if fixture == "gripper-costs" {
+            assert!(h >= 1, "{fixture}: SCP is uninformed");
+        }
+        println!("{fixture}: SCP over atomic projections = {h} (h* = {optimum})");
     }
 }

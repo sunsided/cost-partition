@@ -5,8 +5,16 @@ use sas_plus::{Abstraction, Projection};
 #[test]
 fn scp_over_projections_is_admissible_and_dominates_its_first_component() {
     let mut rng = Rng::new(7);
-    for seed in 0..200 {
-        let task = random_task(seed, RandomTaskParams::default());
+    let plain = RandomTaskParams::default();
+    // Conditional effects and axioms: projections over-approximate both.
+    let rich = RandomTaskParams {
+        max_conditions: 2,
+        num_derived: 2,
+        ..plain
+    };
+    for (seed, params) in (0..200).flat_map(|s| [(s, plain), (s, rich)]) {
+        let task = random_task(seed, params);
+        let init = task.initial_state();
         let costs = task.costs();
         let n = task.num_variables();
         let mut patterns: Vec<Vec<usize>> = (0..n).map(|v| vec![v]).collect();
@@ -16,7 +24,7 @@ fn scp_over_projections_is_admissible_and_dominates_its_first_component() {
             .map(|p| Projection::new(&task, p))
             .collect();
 
-        let h_star = task.perfect_heuristic()(&task.initial);
+        let h_star = task.perfect_heuristic()(&init);
         let mut orders = Vec::new();
         for _ in 0..5 {
             let mut order: Vec<usize> = (0..projections.len()).collect();
@@ -33,9 +41,8 @@ fn scp_over_projections_is_admissible_and_dominates_its_first_component() {
                 );
             }
             let first = &projections[order[0]];
-            let h_first =
-                first.lts().goal_distances(&costs)[first.abstract_state(&task.initial).unwrap()];
-            match (scp.value(&task.initial), h_star) {
+            let h_first = first.lts().goal_distances(&costs)[first.abstract_state(&init).unwrap()];
+            match (scp.value(&init), h_star) {
                 (Some(h), Some(opt)) => {
                     assert!(h <= opt, "seed {seed}: SCP {h} > h* {opt}");
                     assert!(
@@ -46,10 +53,21 @@ fn scp_over_projections_is_admissible_and_dominates_its_first_component() {
                 (None, h) => assert_eq!(h, None, "seed {seed}: SCP claims a false dead end"),
                 (Some(_), None) => {}
             }
+            // Abstractions left out of the order get zero costs but still detect dead ends.
+            let partial = saturated_cost_partitioning(&projections, &order[..1], &costs);
+            match (partial.value(&init), h_star) {
+                (Some(h), Some(opt)) => {
+                    assert!(h <= opt, "seed {seed}: partial SCP {h} > h* {opt}")
+                }
+                (None, h) => {
+                    assert_eq!(h, None, "seed {seed}: partial SCP claims a false dead end")
+                }
+                (Some(_), None) => {}
+            }
             orders.push(order);
         }
         let max = MaxOverOrders::new(&projections, &orders, &costs);
-        if let (Some(h), Some(opt)) = (max.value(&task.initial), h_star) {
+        if let (Some(h), Some(opt)) = (max.value(&init), h_star) {
             assert!(h <= opt);
         }
     }

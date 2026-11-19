@@ -9,6 +9,11 @@
 //! given order, and maximizing over several orders. Planned: greedy and
 //! diversified orders, general (negative) costs, an optimal LP baseline.
 
+#![no_std]
+
+extern crate alloc;
+
+use alloc::{vec, vec::Vec};
 use sas_plus::{Abstraction, State};
 
 /// The result of partitioning costs among abstractions in a fixed order.
@@ -29,6 +34,16 @@ impl<A: Abstraction> CostPartitionedHeuristic<'_, A> {
             .try_fold(0, |sum, (a, d)| Some(sum + d[a.abstract_state(state)?]?))
     }
 
+    /// Like [`value`](Self::value), given the abstract state of `state` in
+    /// each abstraction.
+    fn value_of(&self, abstract_states: &[usize]) -> Option<u64> {
+        debug_assert_eq!(abstract_states.len(), self.distances.len());
+        abstract_states
+            .iter()
+            .zip(&self.distances)
+            .try_fold(0, |sum, (&s, d)| Some(sum + d[s]?))
+    }
+
     pub fn cost_functions(&self) -> &[Vec<u64>] {
         &self.cost_functions
     }
@@ -44,10 +59,7 @@ pub fn saturated_cost_partitioning<'a, A: Abstraction>(
     costs: &[u64],
 ) -> CostPartitionedHeuristic<'a, A> {
     let mut remaining = costs.to_vec();
-    let mut distances: Vec<Vec<Option<u64>>> = abstractions
-        .iter()
-        .map(|a| a.lts().goal_distances(&vec![0; costs.len()]))
-        .collect();
+    let mut distances: Vec<Vec<Option<u64>>> = vec![Vec::new(); abstractions.len()];
     let mut cost_functions = vec![vec![0; costs.len()]; abstractions.len()];
 
     for &i in order {
@@ -66,6 +78,13 @@ pub fn saturated_cost_partitioning<'a, A: Abstraction>(
         distances[i] = h;
         cost_functions[i] = saturated;
     }
+    // Abstractions not in `order` still detect dead ends under zero costs.
+    let zero = vec![0; costs.len()];
+    for (a, d) in abstractions.iter().zip(&mut distances) {
+        if d.is_empty() {
+            *d = a.lts().goal_distances(&zero);
+        }
+    }
     CostPartitionedHeuristic {
         abstractions,
         distances,
@@ -75,12 +94,14 @@ pub fn saturated_cost_partitioning<'a, A: Abstraction>(
 
 /// Maximum over several cost-partitioned heuristics (one per order).
 pub struct MaxOverOrders<'a, A> {
-    pub heuristics: Vec<CostPartitionedHeuristic<'a, A>>,
+    abstractions: &'a [A],
+    heuristics: Vec<CostPartitionedHeuristic<'a, A>>,
 }
 
 impl<'a, A: Abstraction> MaxOverOrders<'a, A> {
     pub fn new(abstractions: &'a [A], orders: &[Vec<usize>], costs: &[u64]) -> Self {
         Self {
+            abstractions,
             heuristics: orders
                 .iter()
                 .map(|o| saturated_cost_partitioning(abstractions, o, costs))
@@ -88,10 +109,21 @@ impl<'a, A: Abstraction> MaxOverOrders<'a, A> {
         }
     }
 
+    /// The cost-partitioned heuristic of each order.
+    pub fn heuristics(&self) -> &[CostPartitionedHeuristic<'a, A>] {
+        &self.heuristics
+    }
+
     /// Every component is admissible, so any component's dead end is a dead end.
     pub fn value(&self, state: &State) -> Option<u64> {
+        // Abstract states do not depend on the order: compute them once.
+        let abstract_states: Vec<usize> = self
+            .abstractions
+            .iter()
+            .map(|a| a.abstract_state(state))
+            .collect::<Option<_>>()?;
         self.heuristics
             .iter()
-            .try_fold(0, |best, h| Some(best.max(h.value(state)?)))
+            .try_fold(0, |best, h| Some(best.max(h.value_of(&abstract_states)?)))
     }
 }
