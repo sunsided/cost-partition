@@ -6,7 +6,8 @@
 //! heuristics admissible.
 //!
 //! Status: saturated cost partitioning (Seipp, Keller & Helmert 2020) for a
-//! given order.
+//! given order, and maximizing over several orders. Planned: greedy and
+//! diversified orders, general (negative) costs, an optimal LP baseline.
 
 use sas_plus::{Abstraction, State};
 
@@ -69,5 +70,28 @@ pub fn saturated_cost_partitioning<'a, A: Abstraction>(
         abstractions,
         distances,
         cost_functions,
+    }
+}
+
+/// Maximum over several cost-partitioned heuristics (one per order).
+pub struct MaxOverOrders<'a, A> {
+    pub heuristics: Vec<CostPartitionedHeuristic<'a, A>>,
+}
+
+impl<'a, A: Abstraction> MaxOverOrders<'a, A> {
+    pub fn new(abstractions: &'a [A], orders: &[Vec<usize>], costs: &[u64]) -> Self {
+        Self {
+            heuristics: orders
+                .iter()
+                .map(|o| saturated_cost_partitioning(abstractions, o, costs))
+                .collect(),
+        }
+    }
+
+    /// Every component is admissible, so any component's dead end is a dead end.
+    pub fn value(&self, state: &State) -> Option<u64> {
+        self.heuristics
+            .iter()
+            .try_fold(0, |best, h| Some(best.max(h.value(state)?)))
     }
 }
