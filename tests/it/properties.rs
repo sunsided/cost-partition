@@ -7,8 +7,9 @@ use cost_partition::{MaxOverOrders, saturated_cost_partitioning};
 use merge_and_shrink::{Bisimulation, LinearMerge, MergeAndShrink};
 use proptest::prelude::*;
 use sas_plus::Abstraction;
+use sas_plus::random::{RandomTaskParams, random_task};
 
-use crate::strategies::{Case, case};
+use crate::strategies::{Case, atomic_and_pair_projections, case};
 
 /// Checks that `h` never exceeds `h_star` and never claims a false dead end.
 ///
@@ -109,9 +110,54 @@ proptest! {
         let costs = case.task.costs();
         let init = case.task.initial_state();
 
+        let h_star = h_star(&case);
+
         let scp = saturated_cost_partitioning(&abstractions, &order, &costs);
-        check_admissible("SCP with merge-and-shrink", scp.value(&init), h_star(&case))?;
-        let max = MaxOverOrders::new(&abstractions, &[order], &costs);
-        check_admissible("max with merge-and-shrink", max.value(&init), h_star(&case))?;
+        check_admissible("SCP with merge-and-shrink", scp.value(&init), h_star)?;
+        // The reverse order puts merge-and-shrink at the mirrored position.
+        let reversed: Vec<usize> = order.iter().rev().copied().collect();
+        let max = MaxOverOrders::new(&abstractions, &[order, reversed], &costs);
+        check_admissible("max with merge-and-shrink", max.value(&init), h_star)?;
     }
+}
+
+/// A state that merge-and-shrink prunes is a dead end for SCP and the maximum.
+///
+/// The random cases reach this path often, but by chance; this fixed seed
+/// always does, and the first assert fails if it stops pruning.
+#[test]
+fn pruned_state_is_a_dead_end() {
+    let task = random_task(1, RandomTaskParams::default());
+    let mas = MergeAndShrink::new(
+        LinearMerge::in_variable_order(task.num_variables()),
+        Bisimulation,
+    )
+    .build(&task);
+    let init = task.initial_state();
+    assert_eq!(
+        mas.abstract_state(&init),
+        None,
+        "seed 1 no longer prunes the initial state"
+    );
+
+    let projections = atomic_and_pair_projections(&task);
+    let mut abstractions: Vec<&dyn Abstraction> =
+        projections.iter().map(|p| p as &dyn Abstraction).collect();
+    abstractions.push(&mas);
+    let order: Vec<usize> = (0..abstractions.len()).collect();
+    let costs = task.costs();
+
+    assert_eq!(
+        saturated_cost_partitioning(&abstractions, &order, &costs).value(&init),
+        None
+    );
+    assert_eq!(
+        MaxOverOrders::new(&abstractions, &[order], &costs).value(&init),
+        None
+    );
+    assert_eq!(
+        task.perfect_heuristic()(&init),
+        None,
+        "pruned, but h* finds a plan"
+    );
 }
