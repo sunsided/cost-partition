@@ -45,7 +45,7 @@ assert!(max.value(&task.initial_state()) >= h);
 
 ## Examples
 
-Both run on the translated `gripper-4` task by default, or on any translator output passed as an argument.
+Both run on the translated `gripper-4` task by default, or on any translator output passed as an argument. `task examples` runs both (`task examples -- path/to/output.sas` for another task).
 
 [`heuristics`](https://github.com/sunsided/cost-partition/blob/main/examples/heuristics.rs) shows why costs are partitioned. Adding the projections' estimates with full costs overestimates the optimum, so the sum is not admissible. SCP splits the costs first: it stays admissible and is stronger than the best single projection.
 
