@@ -1,0 +1,26 @@
+[package]
+name = "cost-partition-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+# A separate workspace, kept out of the crate's own.
+[workspace]
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+arbitrary = { version = "1.5.0", features = ["derive"] }
+libfuzzer-sys = "0.4"
+sas-plus = { version = "0.2.0", features = ["random"] }
+
+[dependencies.cost-partition]
+path = ".."
+
+[[bin]]
+name = "scp"
+path = "fuzz_targets/scp.rs"
+test = false
+doc = false
+bench = false
