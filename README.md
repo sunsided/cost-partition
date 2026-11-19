@@ -6,6 +6,7 @@
 [![codecov](https://codecov.io/gh/sunsided/cost-partition/graph/badge.svg)](https://codecov.io/gh/sunsided/cost-partition)
 [![MSRV](https://img.shields.io/crates/msrv/cost-partition)](https://crates.io/crates/cost-partition)
 [![License](https://img.shields.io/crates/l/cost-partition)](https://github.com/sunsided/cost-partition#license)
+[![unsafe forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/)
 
 Cost partitioning over *any* `sas_plus::Abstraction` (projections, merge-and-shrink, ...): saturated cost partitioning for a given order, and the maximum over several orders.
 
