@@ -4,9 +4,9 @@ version: '3'
 
 vars:
   MAX_TIME: '{{.MAX_TIME | default "10"}}'
-  # Build for the host's rustc target: a prebuilt (musl) cargo-fuzz defaults to musl, which ASan rejects.
+  # Build for nightly rustc's host target: a prebuilt (musl) cargo-fuzz defaults to musl, which ASan rejects.
   HOST_TARGET:
-    sh: "rustc -vV | sed -n 's/^host: //p'"
+    sh: "rustc +nightly -vV | sed -n 's/^host: //p'"
 
 tasks:
   list:
