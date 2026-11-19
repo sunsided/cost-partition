@@ -80,8 +80,9 @@ impl<A: Abstraction> CostPartitionedHeuristic<'_, A> {
 ///
 /// # Panics
 ///
-/// Panics if `order` contains an index outside `abstractions`, or if
-/// `costs.len()` differs from an abstraction's number of labels.
+/// Panics if `order` contains an index outside `abstractions` or the same
+/// index twice, or if `costs.len()` differs from an abstraction's number of
+/// labels.
 pub fn saturated_cost_partitioning<'a, A: Abstraction>(
     abstractions: &'a [A],
     order: &[usize],
@@ -92,6 +93,11 @@ pub fn saturated_cost_partitioning<'a, A: Abstraction>(
     let mut cost_functions = vec![vec![0; costs.len()]; abstractions.len()];
 
     for &i in order {
+        // A second pass would overwrite the first one's distances while its costs stay spent.
+        assert!(
+            distances[i].is_empty(),
+            "abstraction {i} appears twice in order"
+        );
         let lts = abstractions[i].lts();
         let h = lts.goal_distances(&remaining);
         let saturated = saturated_costs(lts, &h);
@@ -162,10 +168,12 @@ impl<'a, A: Abstraction> MaxOverOrders<'a, A> {
     ///
     /// # Panics
     ///
-    /// Panics under the same conditions as [`saturated_cost_partitioning`],
-    /// for any of the orders.
+    /// Panics if `orders` is empty, and under the same conditions as
+    /// [`saturated_cost_partitioning`], for any of the orders.
     #[must_use]
     pub fn new(abstractions: &'a [A], orders: &[Vec<usize>], costs: &[u64]) -> Self {
+        // With no orders, `value` would be 0 everywhere and miss dead ends.
+        assert!(!orders.is_empty(), "at least one order");
         Self {
             abstractions,
             heuristics: orders

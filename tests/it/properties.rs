@@ -24,7 +24,7 @@ fn check_admissible(what: &str, h: Option<u64>, h_star: Option<u64>) -> Result<(
 
 /// `h*` of the case's initial state.
 fn h_star(case: &Case) -> Option<u64> {
-    case.task.perfect_heuristic()(&case.initial_state())
+    case.task.perfect_heuristic()(&case.task.initial_state())
 }
 
 proptest! {
@@ -33,7 +33,7 @@ proptest! {
     fn scp_is_admissible(case in case()) {
         let scp = saturated_cost_partitioning(&case.projections, &case.order, &case.task.costs());
 
-        check_admissible("SCP", scp.value(&case.initial_state()), h_star(&case))?;
+        check_admissible("SCP", scp.value(&case.task.initial_state()), h_star(&case))?;
     }
 
     /// Abstractions left out of the order get zero costs but still detect dead ends.
@@ -42,7 +42,7 @@ proptest! {
         let order = &case.order[..case.prefix];
         let scp = saturated_cost_partitioning(&case.projections, order, &case.task.costs());
 
-        check_admissible("partial SCP", scp.value(&case.initial_state()), h_star(&case))?;
+        check_admissible("partial SCP", scp.value(&case.task.initial_state()), h_star(&case))?;
     }
 
     /// The cost functions sum to at most the original cost of each operator.
@@ -61,7 +61,7 @@ proptest! {
     #[test]
     fn scp_dominates_its_first_component(case in case()) {
         let costs = case.task.costs();
-        let init = case.initial_state();
+        let init = case.task.initial_state();
         let first = &case.projections[case.order[0]];
         let h_first = first
             .abstract_state(&init)
@@ -77,7 +77,7 @@ proptest! {
     #[test]
     fn max_over_orders_is_admissible_and_dominates(case in case()) {
         let costs = case.task.costs();
-        let init = case.initial_state();
+        let init = case.task.initial_state();
         let reversed: Vec<usize> = case.order.iter().rev().copied().collect();
         let max = MaxOverOrders::new(&case.projections, &[case.order.clone(), reversed], &costs);
         let h = max.value(&init);

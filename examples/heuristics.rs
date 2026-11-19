@@ -17,7 +17,12 @@ use std::error::Error;
 
 use cost_partition::{MaxOverOrders, saturated_cost_partitioning};
 use sas_plus::fdr::SasFile;
-use sas_plus::{Abstraction, Projection, State, Task};
+use sas_plus::{Abstraction, Projection, State};
+
+use common::{atomic_and_pair_projections, read, rotations};
+
+#[path = "support/common.rs"]
+mod common;
 
 /// Translator output used when no path is given.
 ///
@@ -68,25 +73,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-/// Reads the translator output at `path`, naming the file when that fails.
-fn read(path: &str) -> Result<String, String> {
-    std::fs::read_to_string(path).map_err(|e| {
-        format!("cannot read {path}: {e}; pass a translator output.sas as the argument")
-    })
-}
-
-/// Projections onto every variable and every pair of variables of `task`.
-fn atomic_and_pair_projections(task: &Task) -> Vec<Projection> {
-    let n = task.num_variables();
-    let singles = (0..n).map(|v| vec![v]);
-    let pairs = (0..n).flat_map(|a| (a + 1..n).map(move |b| vec![a, b]));
-
-    singles
-        .chain(pairs)
-        .map(|pattern| Projection::new(task, pattern))
-        .collect()
-}
-
 /// Goal distance of `state` in `abstraction` under the original `costs`.
 ///
 /// `None` means the abstraction proves `state` a dead end.
@@ -94,15 +80,6 @@ fn full_cost_estimate(abstraction: &Projection, state: &State, costs: &[u64]) ->
     let abstract_state = abstraction.abstract_state(state)?;
 
     abstraction.lts().goal_distances(costs)[abstract_state]
-}
-
-/// Up to `count` distinct orders over `len` abstractions: rotations of the identity.
-///
-/// There are only `len` rotations, so fewer orders come back when `len < count`.
-fn rotations(len: usize, count: usize) -> Vec<Vec<usize>> {
-    (0..count.min(len))
-        .map(|shift| (0..len).map(|i| (i + shift) % len).collect())
-        .collect()
 }
 
 /// Prints one row of the comparison, flagging estimates above `h_star`.
