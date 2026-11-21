@@ -10,7 +10,14 @@
 
 Cost partitioning over *any* `sas_plus::Abstraction` (projections, [merge-and-shrink](https://crates.io/crates/merge-and-shrink), ...): saturated cost partitioning for a given order, and the maximum over several orders. Different kinds of abstractions can share one order as `Vec<&dyn Abstraction>`.
 
-Splitting each operator's cost among several abstractions, so that the parts sum to at most the original cost, makes the *sum* of their heuristics admissible.
+Splitting each operator's cost among several abstractions, so that the parts sum to at most the original cost, makes the *sum* of their heuristics admissible. The crate implements saturated cost partitioning after Seipp, Keller & Helmert (JAIR 2020) and its maximum over orders, is `no_std` with `alloc`, and is checked against exact goal distances on random tasks and real translator output.
+
+## Who this is for
+
+- Authors of optimal classical planners who have several abstraction heuristics (pattern databases, merge-and-shrink, Cartesian or their own) and want an admissible combination that is usually stronger than taking their maximum.
+- Researchers comparing cost partitioning strategies: the saturated cost function of every abstraction is exposed (`cost_functions`), and any type that implements `sas_plus::Abstraction` can take part.
+- Teams that plan on embedded hardware, since the crate is `no_std` and has a single dependency.
+- For the abstractions themselves, use [sas-plus](https://github.com/sunsided/sas-plus) (projections) and [merge-and-shrink](https://github.com/sunsided/merge-and-shrink); for landmark cost partitioning, LM-cut or operator counting, [planning-heuristics](https://github.com/sunsided/planning-heuristics), which also wraps this crate's heuristics for its `Heuristic` trait.
 
 ## What cost partitioning is
 
@@ -47,6 +54,19 @@ sum                    2            3           5   = h* = 5
 ```
 
 Different orders give different estimates, and none is best for every state. `MaxOverOrders` computes SCP for several orders and takes the largest estimate, which is still admissible.
+
+## Installation
+
+```sh
+cargo add cost-partition
+```
+
+Or in `Cargo.toml`:
+
+```toml
+[dependencies]
+cost-partition = "0.2"
+```
 
 ## Usage
 
@@ -112,7 +132,7 @@ SCP ≤ h*, SCP ≥ its first component, no false dead ends, and cost functions 
 
 Rust 1.86. Raising it is a minor-version change.
 
-## Roadmap
+## Not yet implemented
 
 Greedy and diversified orders, general (negative) costs, an optimal LP baseline (`good_lp`), uniform cost partitioning.
 
