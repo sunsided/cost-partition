@@ -6,6 +6,7 @@ edition = "2024"
 license = "MIT OR Apache-2.0"
 rust-version = "1.86"
 repository = "https://github.com/sunsided/cost-partition"
+homepage = "https://sunsided.github.io/planning-and-search/crates/cost-partition/"
 readme = "README.md"
 keywords = ["planning", "cost-partitioning", "heuristic", "abstraction", "fast-downward"]
 categories = ["algorithms", "science", "no-std"]

@@ -12,6 +12,8 @@ Cost partitioning over *any* `sas_plus::Abstraction` (projections, [merge-and-sh
 
 Splitting each operator's cost among several abstractions, so that the parts sum to at most the original cost, makes the *sum* of their heuristics admissible.
 
+Part of the [planning and search crates](https://sunsided.github.io/planning-and-search/); see also this crate's [overview page](https://sunsided.github.io/planning-and-search/crates/cost-partition/).
+
 ## What cost partitioning is
 
 A planning heuristic estimates, for a state, the cost of the cheapest plan to a goal. Optimal search such as A* needs it to be *admissible*: it never estimates more than the true optimum `h*`.
