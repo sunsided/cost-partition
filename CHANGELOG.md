@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0](https://github.com/sunsided/cost-partition/compare/v0.2.0...v0.3.0) - 2026-11-22
+
+### Added
+
+- Add a task that runs the examples
+- Add examples comparing heuristics and running A*
+
+### Changed
+
+- Build the tests against merge-and-shrink 0.3 ([#16](https://github.com/sunsided/cost-partition/pull/16))
+- Link the crate to its page on the planning and search site ([#15](https://github.com/sunsided/cost-partition/pull/15))
+- Describe the audience and installation in the README ([#13](https://github.com/sunsided/cost-partition/pull/13))
+- Build the tests against merge-and-shrink 0.3
+- Link the crate to its page on the planning and search site
+- Report dependencies and workflow findings to GitHub code security
+- Describe the audience and installation in the README
+- Test SCP with a merge-and-shrink abstraction and link the crate ([#12](https://github.com/sunsided/cost-partition/pull/12))
+- Pin the pruned path with a fixed seed and check two orders
+- Test SCP with a merge-and-shrink abstraction and link the crate
+- Explain cost partitioning and SCP in the README
+- Track visited abstractions explicitly and name the API in panics
+- Reject repeated and missing orders and ship only what the crate needs
+- Simplify the best-single fold and name the A* cost mismatch
+
+### Fixed
+
+- Fix the review findings in the examples
+
 ## [0.2.0](https://github.com/sunsided/cost-partition/compare/v0.1.0...v0.2.0) - 2026-11-19
 
 ### Added
