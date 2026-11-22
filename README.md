@@ -19,6 +19,8 @@ Splitting each operator's cost among several abstractions, so that the parts sum
 - Teams that plan on embedded hardware, since the crate is `no_std` and has a single dependency.
 - For the abstractions themselves, use [sas-plus](https://github.com/sunsided/sas-plus) (projections) and [merge-and-shrink](https://github.com/sunsided/merge-and-shrink); for landmark cost partitioning, LM-cut or operator counting, [planning-heuristics](https://github.com/sunsided/planning-heuristics), which also wraps this crate's heuristics for its `Heuristic` trait.
 
+Part of the [planning and search crates](https://sunsided.github.io/planning-and-search/); see also this crate's [overview page](https://sunsided.github.io/planning-and-search/crates/cost-partition/).
+
 ## What cost partitioning is
 
 A planning heuristic estimates, for a state, the cost of the cheapest plan to a goal. Optimal search such as A* needs it to be *admissible*: it never estimates more than the true optimum `h*`.
