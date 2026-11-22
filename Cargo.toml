@@ -1,7 +1,7 @@
 [package]
 name = "cost-partition"
 description = "Saturated cost partitioning and its maximum over orders for admissible planning heuristics over arbitrary abstractions"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 rust-version = "1.86"
