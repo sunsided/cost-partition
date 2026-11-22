@@ -1,14 +1,14 @@
 [package]
 name = "cost-partition"
-description = "Cost partitioning (saturated, max-over-orders) over arbitrary planning abstractions"
+description = "Saturated cost partitioning and its maximum over orders for admissible planning heuristics over arbitrary abstractions"
 version = "0.2.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 rust-version = "1.86"
 repository = "https://github.com/sunsided/cost-partition"
 readme = "README.md"
-keywords = ["planning", "cost-partitioning", "heuristic", "abstraction", "fast-downward"]
-categories = ["algorithms", "science", "no-std"]
+keywords = ["planning", "cost-partitioning", "heuristic", "abstraction", "pattern-database"]
+categories = ["algorithms", "artificial-intelligence", "science", "no-std"]
 # Only what the library and the README doctest need. The tests, benches and
 # examples read the GPL-2.0-or-later fixtures in tests/fixtures/translated,
 # which stay out of the package (see tests/fixtures/README.md).

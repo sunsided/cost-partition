@@ -5,9 +5,10 @@
 //! parts sum to at most the original cost, makes the *sum* of their
 //! heuristics admissible.
 //!
-//! Status: saturated cost partitioning (Seipp, Keller & Helmert 2020) for a
-//! given order, and maximizing over several orders. Planned: greedy and
-//! diversified orders, general (negative) costs, an optimal LP baseline.
+//! Implemented: saturated cost partitioning (Seipp, Keller & Helmert 2020)
+//! for a given order, and maximizing over several orders. Not yet
+//! implemented: greedy and diversified orders, general (negative) costs, an
+//! optimal LP baseline.
 
 #![no_std]
 #![forbid(unsafe_code)]
